@@ -12,13 +12,13 @@ void unsetenv_command(str_cmd *command)
 {
 	int result;
 
-	if (command->arg[2] == NULL)
+	if (command->arg[1] == NULL)
 	{
 		command->output_message = "Usage: unsetenv VARIABLE";
 		return;
 	}
 
-	result = _unsetenv(command->arg[2]);
+	result = _unsetenv(command->arg[1]);
 	if (result == -1)
 	{
 		command->output_message = "Variable not found";
@@ -35,7 +35,7 @@ void unsetenv_command(str_cmd *command)
 
 int _addenv(const char *name, const char *value)
 {
-	int env_size = 0, i;
+	int env_size = 0;
 	char *new_var = NULL;
 
 	while (environ[env_size] != NULL)
@@ -46,16 +46,11 @@ int _addenv(const char *name, const char *value)
 		perror("Error in _addenv");
 		return (-1);
 	}
-	_strcpy(new_var, name); /* Copy name to new_var */
-	_strcpy(new_var + _strlen(name), "="); /* Concatenate "=" */
-	_strcpy(new_var + _strlen(name) + 1, value); /*  Concatenate value */
-
-	/* Shift existing variables to make room for the new one */
-	for (i = env_size; i >= 0; i--)
-	{
-		environ[i + 1] = environ[i];
-	}
-	environ[0] = new_var;
+	_strcpy(new_var, name);
+	_strcpy(new_var + _strlen(name), "=");
+	_strcpy(new_var + _strlen(name) + 1, value);
+	environ[env_size] = new_var;
+	environ[env_size + 1] = NULL;
 	return (0);
 }
 
@@ -80,14 +75,47 @@ int _setenv(char *name, char *value)
 
 	if (var)
 	{
-		/* Variable exists, so we need to replace it */
-		_unsetenv(name);
-		_addenv(name, value);
+		_replaceenv(name, value);
 	}
 	else
 	{
-		/* Variable does not exist, so we create a new one */
 		_addenv(name, value);
 	}
 	return (0);
+}
+
+/**
+ * _replaceenv - Replaces or adds an environment variable with a new value.
+ * @name: The name of the environment variable.
+ * @new_value: The new value for the environment variable.
+ */
+
+void _replaceenv(const char *name, const char *new_value)
+{
+	char *new_var;
+	int i;
+
+	if (name == NULL || name[0] == '\0' || new_value == NULL)
+	{
+		return;
+	}
+	new_var = malloc(_strlen(name) + _strlen(new_value) + 2);
+	if (!new_var)
+	{
+		perror("Error in _replaceenv");
+		return;
+	}
+		_strcpy(new_var, name);
+		_strcat(new_var, "=");
+		_strcat(new_var, new_value);
+		for (i = 0; environ[i] != NULL; i++)
+		{
+			if (_strncmp(environ[i], name, _strlen(name)) == 0 &&
+			environ[i][_strlen(name)] == '=')
+			{
+				free(environ[i]);
+				environ[i] = new_var;
+				return;
+			}
+		}
 }

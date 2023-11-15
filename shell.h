@@ -108,6 +108,7 @@ int _unsetenv(const char *name);
 void unsetenv_command(str_cmd *command);
 void setenv_command(str_cmd *command);
 int _addenv(const char *name, const char *value);
+void _replaceenv(const char *name, const char *new_value);
 
 /* parser.c */
 void Parser(str_cmd *command);

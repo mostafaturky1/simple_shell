@@ -16,9 +16,9 @@ void exit_command(str_cmd *command)
 		status = command->output_status;
 
 	command->executablePath = NULL;
-		/* No argument provided, exit with status 0 */
-		free_struct(command);
-		exit(status);
+	/* No argument provided, exit with status 0 */
+	free_struct(command);
+	exit(status);
 }
 
 /**

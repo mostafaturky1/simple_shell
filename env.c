@@ -104,35 +104,29 @@ void env_command(str_cmd *command)
 
 int _unsetenv(const char *name)
 {
-	char **current = environ;
-	char **previous = NULL;
+	int i;
 
 	if (name == NULL || name[0] == '\0')
-		return (-1);
-
-	while (*current != NULL)
 	{
-		if (_strstr(*current, name) == *current)
+		perror("Invalid variable name");
+		return (-1);
+	}
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		if (_strncmp(environ[i], name, _strlen(name)) == 0
+		&& environ[i][_strlen(name)] == '=')
 		{
-			/* Found the environment variable, remove it */
-			if (previous == NULL)
+			free(environ[i]);
+			while (environ[i] != NULL)
 			{
-				/* Variable to be removed is at the beginning of the environment */
-				environ++;
+				environ[i] = environ[i + 1];
+				i++;
 			}
-			else
-			{
-				/* Variable to be removed is not at the beginning */
-				*previous = *(current + 1); /* Shift the environment array */
-			}
-			/* Free the memory */
-			free(*current);
 			return (0);
 		}
-		previous = current;
-		current++;
 	}
-	return (-1); /* Variable not found */
+	perror("Variable not found");
+	return (-1);
 }
 
 /**
@@ -147,12 +141,12 @@ void setenv_command(str_cmd *command)
 {
 	int result;
 
-	if (command->arg[2] == NULL || command->arg[3] == NULL)
+	if (command->arg[1] == NULL || command->arg[2] == NULL)
 	{
 		command->output_message = "Usage: setenv VARIABLE VALUE";
 		return;
 	}
-	result = _setenv(command->arg[2], command->arg[3]);
+	result = _setenv(command->arg[1], command->arg[2]);
 	if (result == -1)
 	{
 		command->output_message = "_setenv error";

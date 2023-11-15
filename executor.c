@@ -1,6 +1,20 @@
 #include "shell.h"
 #include <string.h>
 
+
+/**
+ * notFounderr - Sets "not found" as the output message
+ * and marks the command as failed.
+ *
+ * @command: The command structure.
+ */
+
+void notFounderr(str_cmd *command)
+{
+	command->output_message = "not found";
+	command->output_status = STATUS_FAILED_FULL;
+}
+
 /**
  * execute - Execute the given command
  * @command: Pointer to the command structure
@@ -23,6 +37,14 @@ void execute(str_cmd *command)
 	{
 		command_executor = cd_command;
 	}
+	if (_strcmp(command->arg[0], "setenv") == 0)
+	{
+		command_executor = setenv_command;
+	}
+	if (_strcmp(command->arg[0], "unsetenv") == 0)
+	{
+		command_executor = unsetenv_command;
+	}
 	if (_strcmp(command->arg[0], "env") == 0)
 	{
 		command_executor = env_command;
@@ -33,15 +55,13 @@ void execute(str_cmd *command)
 	}
 	if (command_executor == default_command && command->executablePath == NULL)
 	{
-		command->output_message = "not found";
-		command->output_status = STATUS_FAILED_FULL;
+		notFounderr(command);
 		return;
 	}
 	if (command_executor == default_command &&
 	access(command->executablePath, X_OK) != 0)
 	{
-		command->output_message = "not found";
-		command->output_status = STATUS_FAILED_FULL;
+		notFounderr(command);
 		return;
 	}
 	(*command_executor)(command);
